@@ -54,6 +54,81 @@ func TestStartWithValidContentFile(t *testing.T) {
 	})
 }
 
+func TestStartWithInvalidContentFile(t *testing.T) {
+	t.Parallel()
+
+	name := "Name"
+	city := "City"
+	country := "country"
+	alias := []string{"Alias1", "Alias2"}
+	regions := []string{"Region1", "Region2"}
+	coordinates := []float64{34.434343, 67.354545}
+	province := "province"
+	timezone := "Asia/Dubai"
+	unlocs := []string{"unloc1"}
+	code := "code"
+	portJSON := getJSONPort(name, city, country, alias, regions, coordinates, province, timezone, unlocs, code)
+
+	tests := []struct {
+		name        string
+		fileContent string
+	}{
+		{
+			name:        "Given a content with missing the key When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`{ : %s}`, ""),
+		},
+		{
+			name:        "Given a content with a key without quotation marks When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`{ key : %s }`, ""),
+		},
+		{
+			name:        "Given a content without opening delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`"key" : %s }`, ""),
+		},
+		{
+			name:        "Given a content with unexpected opening delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`[ "key" : %s }`, ""),
+		},
+		{
+			name:        "Given a content with invalid opening delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`| "key" : %s }`, ""),
+		},
+		{
+			name:        "Given a content without closing delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`{ "key" : %s`, portJSON),
+		},
+		{
+			name:        "Given a content with unexpected closing delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`{ "key" : %s ]`, portJSON),
+		},
+		{
+			name:        "Given a content with invalid closing delimiter When reading the file Then an error is expected",
+			fileContent: fmt.Sprintf(`{ "key" : %s |`, portJSON),
+		},
+		{
+			name:        "Given a content with an invalid Port When reading the file Then an error is expected",
+			fileContent: `{ "key" : x }`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			stream := NewPortStream()
+			go func() {
+				stream.Start(strings.NewReader(tt.fileContent))
+			}()
+			var errorFound error
+			for entry := range stream.Watch() {
+				if entry.Error != nil {
+					errorFound = entry.Error
+				}
+			}
+			assert.Error(t, errorFound)
+		})
+	}
+}
+
 func getJSONPort(name string, city string, country string, alias []string, regions []string,
 	coordinates []float64, province string, timezone string, unlocs []string, code string) string {
 
