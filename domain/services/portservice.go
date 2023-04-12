@@ -32,8 +32,8 @@ func (s PortService) Upsert(portEntity entities.Port) error {
 		if err != nil {
 			return fmt.Errorf("Error updating port %s. Error: %v", portEntity.ID, err)
 		}
-		log.Printf("Port updated %s.", portEntity.ID)
 
+		log.Printf("Port updated %s.", portEntity.ID)
 	} else {
 		err = s.portRepository.Create(portEntity)
 		if err != nil {
