@@ -94,3 +94,23 @@ func (p PortRepository) GetByID(id string) (*entities.Port, error) {
 
 	return &port, nil
 }
+
+func (p PortRepository) Create(port entities.Port) error {
+	portsCollection := p.client.Database(p.databaseName).Collection("ports")
+
+	var portDB PortDB
+
+	_, err := portsCollection.InsertOne(context.TODO(), portDB.From(port))
+
+	return err
+}
+
+func (p PortRepository) Update(port entities.Port, id string) error {
+	portsCollection := p.client.Database(p.databaseName).Collection("ports")
+
+	var portDB PortDB
+
+	_, err := portsCollection.ReplaceOne(context.TODO(), bson.M{"key": id}, portDB.From(port))
+
+	return err
+}

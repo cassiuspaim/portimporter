@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cassiuspaim/portimporter/domain/entities"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
@@ -99,4 +100,56 @@ func TestFindPorts(t *testing.T) {
 		assert.NoError(t, err, "Error must not be found")
 	})
 
+	t.Run("Given a Port is created When the Port is queried it must be found", func(t *testing.T) {
+		t.Parallel()
+
+		portRepository := NewPortRepository(dbClient, "portsTest")
+
+		err := portRepository.Create(entities.NewPort(
+			"id",
+			"name",
+			"city",
+			"country",
+			[]string{"alias1", "alias2"},
+			[]string{"region1", "region2"},
+			[]float64{43.434343434, 35.2423434},
+			"province",
+			"timezone",
+			[]string{"unloc1", "unloc2"},
+			"code"))
+		assert.NoError(t, err, "Error must not be found creating Port")
+
+		port, err := portRepository.GetByID("id")
+		assert.NotNil(t, port, "Port must exist at database")
+		assert.NoError(t, err, "Error must not be found quering Port")
+	})
+
+	t.Run("Given a Port is stored When the Port is queried it must be found", func(t *testing.T) {
+		t.Parallel()
+
+		portRepository := NewPortRepository(dbClient, "portsTest")
+		idPort := "idx"
+
+		port := entities.NewPort(
+			idPort,
+			"name",
+			"city",
+			"country",
+			[]string{"alias1", "alias2"},
+			[]string{"region1", "region2"},
+			[]float64{43.434343434, 35.2423434},
+			"province",
+			"timezone",
+			[]string{"unloc1", "unloc2"},
+			"code")
+		err := portRepository.Create(port)
+		assert.NoError(t, err, "Error must not be found creating Port")
+
+		expectedCity := "Other city"
+		port.City = expectedCity
+		err = portRepository.Update(port, idPort)
+		assert.NoError(t, err, "Error must not be found quering Port")
+		portExisting, _ := portRepository.GetByID(idPort)
+		assert.Equal(t, expectedCity, portExisting.City)
+	})
 }
