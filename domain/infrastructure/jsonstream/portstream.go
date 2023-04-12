@@ -41,7 +41,7 @@ func NewPortStream() Stream {
 }
 
 // Watch watches JSON streams. Each stream entry will either have an error or a
-// Port object. Client code does not need to explicitly exit after catching an
+// PortSteam object. Client code does not need to explicitly exit after catching an
 // error as the `Start` method will close the channel automatically.
 func (s Stream) Watch() <-chan Entry {
 	return s.stream
