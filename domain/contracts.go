@@ -10,5 +10,6 @@ type PortService interface {
 // Interface to define the operations for the PortRepository.
 type PortRepository interface {
 	GetByID(id string) (*entities.Port, error)
+	Create(entities.Port) error
 	Update(entities.Port, string) error
 }

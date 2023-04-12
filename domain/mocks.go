@@ -10,6 +10,7 @@ import (
 // MockPortRepository used for tests.
 type MockPortRepository struct {
 	GetByIDfn func(id string) (*entities.Port, error)
+	Createfn  func(entities.Port) error
 	Updatefn  func(entities.Port, string) error
 }
 
@@ -21,6 +22,16 @@ func (r MockPortRepository) GetByID(id string) (*entities.Port, error) {
 	}
 
 	return nil, errors.New("No behaviour defined")
+}
+
+// Does what is defined at MockPortRepository.Createfn.
+// If MockPortRepository.Createfn is not defined it retrieves an Error.
+func (r MockPortRepository) Create(port entities.Port) error {
+	if r.Createfn != nil {
+		return r.Createfn(port)
+	}
+
+	return errors.New("No behaviour defined")
 }
 
 // Does what is defined at MockPortRepository.Updatefn.
